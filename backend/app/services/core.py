@@ -24,14 +24,17 @@ class TransactionService:
         log.info("Executing mock intelligence pipeline")
         features=self.feature.extract_features(data); prediction=self.model.predict(features); graph=self.graph.get_network_context(data.source_account_id); assessment=self.fraud.assess(features,prediction,graph)
         tid=data.transaction_id or f"TXN-{len(self.repo.list())+1:04d}"; risk_level=RiskLevel(assessment["risk_level"])
-        self.repo.add(Transaction(**data.model_dump(exclude={"transaction_id"}),transaction_id=tid,risk_score=assessment["risk_score"],risk_level=risk_level,status="FLAGGED" if assessment["risk_score"]>=70 else "MONITORED",network_id=graph["network_id"]))
+        tx_obj = Transaction(**data.model_dump(exclude={"transaction_id"}),transaction_id=tid,risk_score=assessment["risk_score"],risk_level=risk_level,status="FLAGGED" if assessment["risk_score"]>=70 else "MONITORED",network_id=graph["network_id"])
+        self.repo.add(tx_obj)
+        if hasattr(self.graph, "ingest_transaction"):
+            self.graph.ingest_transaction(tx_obj)
         return self._result(tid,assessment,prediction,graph,features)
     def assess_account(self,id:str)->RiskResult:
         tx=next((x for x in self.repo.list() if id in (x.source_account_id,x.destination_account_id)),None)
         if not tx: raise NotFoundError("ACCOUNT_NOT_FOUND",f"Account {id} was not found.")
         data=TransactionCreate(**tx.model_dump(include={"transaction_id","source_account_id","destination_account_id","amount","timestamp","transaction_type"})); f=self.feature.extract_features(data); p=self.model.predict(f); g=self.graph.get_network_context(id); a=self.fraud.assess(f,p,g); return self._result(id,a,p,g,f)
     def _result(self,id,a,p,g,f):
-        return RiskResult(entity_id=id,risk_score=a["risk_score"],risk_level=RiskLevel(a["risk_level"]),priority=RiskLevel(a["priority"]),signals=[RiskSignal(name=s,severity=RiskLevel(a["risk_level"]),value="Synthetic signal") for s in a["signals"]],model=ModelInfo(name=p["model_name"],version=p["model_version"]),network=NetworkSummary(network_id=g["network_id"],connected_entities=g["connected_entities"],graph_score=g["graph_score"]),explanation=self.explain.explain(a,f,g))
+        return RiskResult(entity_id=id,risk_score=a["risk_score"],risk_level=RiskLevel(a["risk_level"]),priority=RiskLevel(a["priority"]),signals=[RiskSignal(name=s,severity=RiskLevel(a["risk_level"]),value="Synthetic signal") for s in a["signals"]],model=ModelInfo(name=p["model_name"],version=p["model_version"],implementation=p.get("implementation","CALIBRATED_ML")),network=NetworkSummary(network_id=g["network_id"],connected_entities=g["connected_entities"],graph_score=g["graph_score"]),explanation=self.explain.explain(a,f,g))
 
 class EntityService:
     def __init__(self,repo,kind:str): self.repo,self.kind=repo,kind
@@ -47,8 +50,13 @@ class InvestigationService(EntityService):
     def update_status(self,id,status):
         item=self.get(id); updated=item.model_copy(update={"status":status,"updated_at":datetime.now(timezone.utc)}); log.info("Investigation status updated: %s",id); return self.repo.update(updated)
 
+from app.services.temporal_tracing import TemporalTracingService
+
 class TracingService:
-    def trace(self,id): return build_trace(id)
+    def __init__(self, repo: TransactionRepository | None = None):
+        self.tracer = TemporalTracingService(repo or InMemoryTransactionRepository())
+    def trace(self, id: str):
+        return self.tracer.trace(id)
 
 class SimulationService:
     def __init__(self): self.items={}

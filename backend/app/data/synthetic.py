@@ -19,7 +19,7 @@ def build_transactions() -> list[Transaction]:
     # Preserve a memorable branching demo trail for TXN-0001.
     trail=[(1,1,2,50000),(2,2,3,47000),(3,3,4,30000),(4,3,5,10000),(5,3,6,7000)]
     for idx,s,d,a in trail:
-        rows[idx-1]=Transaction(transaction_id=f"TXN-{idx:04d}",source_account_id=f"ACC-{s:04d}",destination_account_id=f"ACC-{d:04d}",amount=a,timestamp=NOW-timedelta(minutes=idx*18),transaction_type="IMPS",risk_score=96-idx*2,risk_level=RiskLevel.CRITICAL,status="FLAGGED",network_id="NET-001")
+        rows[idx-1]=Transaction(transaction_id=f"TXN-{idx:04d}",source_account_id=f"ACC-{s:04d}",destination_account_id=f"ACC-{d:04d}",amount=a,timestamp=NOW-timedelta(minutes=(6-idx)*18),transaction_type="IMPS",risk_score=96-idx*2,risk_level=RiskLevel.CRITICAL,status="FLAGGED",network_id="NET-001")
     return rows
 
 TRANSACTIONS=build_transactions()

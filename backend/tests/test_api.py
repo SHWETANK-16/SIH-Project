@@ -14,7 +14,7 @@ def test_account_not_found_contract():
 def test_networks():
     rows=client.get("/api/v1/networks").json(); assert len(rows)==4 and rows[0]["edges"][0]["transaction_id"]
 def test_risk_pipeline():
-    result=client.get("/api/v1/risk/ACC-0001"); assert result.status_code==200 and result.json()["model"]["implementation"]=="MOCK"
+    result=client.get("/api/v1/risk/ACC-0001"); assert result.status_code==200 and result.json()["model"]["implementation"]=="CALIBRATED_ML"
 def test_investigation_update():
     assert len(client.get("/api/v1/investigations").json())>=10
     result=client.patch("/api/v1/investigations/CASE-0001/status",json={"status":"UNDER_INVESTIGATION"}); assert result.json()["status"]=="UNDER_INVESTIGATION"
