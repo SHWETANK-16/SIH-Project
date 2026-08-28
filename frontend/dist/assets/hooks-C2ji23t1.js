@@ -1,0 +1,1 @@
+import{u as a}from"./States-BuZ3Ea3u.js";import{g as r,a as e}from"./api-Brz7JCGw.js";function o(){return a({queryKey:["transactions"],queryFn:r})}function u(n){return a({queryKey:["transactions",n],queryFn:()=>e(n),enabled:!!n})}export{u as a,o as u};
