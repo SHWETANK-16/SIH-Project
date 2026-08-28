@@ -1,0 +1,14 @@
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+pydantic-settings==2.10.1
+pytest==8.4.1
+httpx==0.28.1
+networkx>=3.0
+# --- machine learning ---
+# Floors rather than pins: xgboost/scikit-learn ship interpreter-specific wheels,
+# and pinning an exact version forces a slow source build on newer Pythons.
+# For a slimmer Linux/Docker image (~200MB less) swap xgboost for xgboost-cpu,
+# which drops the bundled NVIDIA NCCL libraries. Inference here is CPU-only.
+xgboost>=2.1
+scikit-learn>=1.5
+numpy>=1.26
