@@ -1,0 +1,7 @@
+import { Filter, Search, SlidersHorizontal } from 'lucide-react';
+import type { TransactionFilters as Filters } from '../types';
+
+export function TransactionFilters({ filters, onChange }: { filters: Filters; onChange: (filters: Filters) => void }) {
+  const update = (key: keyof Filters, value: string) => onChange({ ...filters, [key]: value });
+  return <div className="filter-bar"><div className="filter-search"><Search size={16} /><input value={filters.query} onChange={(e) => update('query', e.target.value)} placeholder="Search transaction ID, sender or receiver..." /></div><select value={filters.dateRange} onChange={(e) => update('dateRange', e.target.value)} aria-label="Date range"><option>Last 7 days</option><option>Last 30 days</option><option>Custom range</option></select><select value={filters.risk} onChange={(e) => update('risk', e.target.value)} aria-label="Risk level"><option value="all">All risk levels</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select><select value={filters.status} onChange={(e) => update('status', e.target.value)} aria-label="Status"><option value="all">All statuses</option><option value="flagged">Flagged</option><option value="pending">Pending</option><option value="completed">Completed</option><option value="blocked">Blocked</option></select><button className="filter-button"><SlidersHorizontal size={16} /> More filters</button></div>;
+}

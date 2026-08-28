@@ -1,0 +1,10 @@
+@keyframes page-in { from { opacity: 0; transform: translateY(8px) scale(.995); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes sphere-rotate { from { transform: rotateX(65deg) rotateZ(0); } to { transform: rotateX(65deg) rotateZ(360deg); } }
+@keyframes sphere-counter { from { transform: rotateZ(0); } to { transform: rotateZ(-360deg); } }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes pulse { 0%,100% { opacity: .35; transform: scale(.9); } 50% { opacity: 1; transform: scale(1.1); } }
+@keyframes scan { from { transform: translateY(-110%); } to { transform: translateY(120%); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes enter-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.page-transition { animation: page-in .36s ease-out both; }
+.spin { animation: spin .9s linear infinite; }

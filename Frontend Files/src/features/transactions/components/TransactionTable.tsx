@@ -1,0 +1,11 @@
+import { ArrowUpRight, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import type { Transaction } from '../../../types/common';
+import { StatusPill } from '../../../shared/components/StatusPill';
+
+function formatAmount(amount: number) { return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount); }
+
+export function TransactionTable({ transactions }: { transactions: Transaction[] }) {
+  const navigate = useNavigate();
+  return <div className="table-wrap"><table className="data-table"><thead><tr><th>Transaction ID</th><th>Sender</th><th>Receiver</th><th>Amount</th><th>Date & time</th><th>Status</th><th>Risk score</th><th><span className="sr-only">Action</span></th></tr></thead><tbody>{transactions.map((transaction) => <tr key={transaction.id} tabIndex={0} onClick={() => navigate(`/transactions/${transaction.id}`)} onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/transactions/${transaction.id}`); }}><td><strong>{transaction.id}</strong><small>{transaction.category}</small></td><td>{transaction.sender}</td><td>{transaction.receiver}</td><td className="amount-cell">{formatAmount(transaction.amount)}</td><td>{new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(transaction.date))}</td><td><StatusPill status={transaction.status} /></td><td><span className={`risk-score risk-${transaction.risk.level}`}><i />{transaction.risk.score}</span></td><td><button className="row-action" aria-label={`Open ${transaction.id}`} onClick={(e) => { e.stopPropagation(); navigate(`/transactions/${transaction.id}`); }}><ArrowUpRight size={17} /></button></td></tr>)}</tbody></table>{transactions.length === 0 && <div className="table-empty">No transactions match the selected filters.</div>}<div className="pagination"><span>Showing <b>{transactions.length}</b> of <b>{transactions.length}</b> transactions</span><div><button className="icon-button" aria-label="Previous page"><ChevronLeft size={16} /></button><button className="page-number active">1</button><button className="page-number">2</button><button className="page-number">3</button><button className="icon-button" aria-label="Next page"><ChevronRight size={16} /></button></div></div></div>;
+}

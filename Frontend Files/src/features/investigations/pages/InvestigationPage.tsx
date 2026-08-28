@@ -1,0 +1,16 @@
+import { ArrowLeft, BadgeInfo, CircleAlert, FilePlus2, MoreHorizontal, Network, ShieldAlert, UserRound } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { ErrorState, LoadingState } from '../../../shared/components/States';
+import { StatusPill } from '../../../shared/components/StatusPill';
+import { InvestigationGraph } from '../components/InvestigationGraph';
+import { InvestigationTimeline } from '../components/InvestigationTimeline';
+import { useInvestigation } from '../hooks';
+
+export function InvestigationPage() {
+  const { id = '' } = useParams(); const { data, isLoading, isError, refetch } = useInvestigation(id); const [selectedNode, setSelectedNode] = useState('main'); const navigate = useNavigate();
+  if (isLoading) return <LoadingState label="Assembling investigation network..." />;
+  if (isError || !data) return <ErrorState message="Unable to load this investigation." onRetry={() => void refetch()} />;
+  const selected = data.nodes.find((node) => node.id === selectedNode) ?? data.nodes[0];
+  return <div className="page-container investigation-page"><Link to="/transactions" className="back-link in-app"><ArrowLeft size={16} /> Transaction Explorer</Link><div className="case-header"><div><p className="eyebrow">Investigation workspace · {data.investigation.id}</p><h1>{data.investigation.title}</h1><p>{data.investigation.summary}</p></div><div className="case-header-actions"><StatusPill status={data.investigation.status} /><button className="button button-secondary"><FilePlus2 size={16} /> Add evidence</button><button className="icon-button" aria-label="More investigation actions"><MoreHorizontal size={19} /></button></div></div><div className="case-meta"><span><ShieldAlert size={15} /> Risk score <b className="critical-text">{data.investigation.risk.score}/100</b></span><span><UserRound size={15} /> {data.investigation.investigator}</span><span><BadgeInfo size={15} /> Updated {data.investigation.updatedAt}</span></div><div className="investigation-grid"><InvestigationGraph nodes={data.nodes} edges={data.edges} selectedNode={selectedNode} onSelect={setSelectedNode} /><aside className="investigation-side"><article className="content-card selected-entity"><div className="card-heading"><div><p className="eyebrow">Selected network object</p><h2>{selected.label}</h2></div><span className={`risk-score risk-${selected.risk}`}><i /> {selected.risk}</span></div><span className="selected-node-icon"><Network size={22} /></span><dl><div><dt>Object type</dt><dd>{selected.type}</dd></div><div><dt>Risk score</dt><dd>{selected.risk === 'critical' ? '92' : selected.risk === 'high' ? '78' : '41'} / 100</dd></div><div><dt>Linked flow</dt><dd>{selected.value ?? '3 connected paths'}</dd></div><div><dt>Network links</dt><dd>{data.edges.filter((edge) => edge.source === selected.id || edge.target === selected.id).length} direct connections</dd></div></dl><button className="button button-secondary full-width" onClick={() => navigate('/entities/ENT-102')}>View entity profile</button></article><article className="content-card side-alert"><CircleAlert size={18} /><div><b>Pattern alert</b><p>Potential layering behavior detected in the selected path.</p></div></article></aside></div><InvestigationTimeline items={data.timeline} /></div>;
+}
